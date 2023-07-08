@@ -50,3 +50,13 @@ def get_day_phase(date):
         date > night_min2 and date < night_max2
     ):
         return "night"
+
+
+def get_day_of_the_month(date):
+    date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+    return str(date.day)
+
+
+def get_month_of_the_year(date):
+    date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+    return str(date.month)
