@@ -1,4 +1,9 @@
-from datetime import datetime
+import typing as tp
+from datetime import datetime, timedelta
+from functools import partial
+
+import pandas as pd
+import tqdm
 
 
 def is_high_season(date):
@@ -52,11 +57,39 @@ def get_day_phase(date):
         return "night"
 
 
-def get_day_of_the_month(date):
+def get_day_data(date) -> tp.Tuple[str, str, int]:
     date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-    return str(date.day)
+    day_name = date.strftime("%A")
+    month = str(date.month)
+    day = date.day
+    return [day_name, month, day]
 
 
-def get_month_of_the_year(date):
-    date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-    return str(date.month)
+def aggregate_concurrent_flights_number(
+    data: pd.DataFrame, time_window: int = 1
+) -> pd.DataFrame:
+    string_to_date = partial(
+        lambda string, _format: datetime.strptime(string, _format),
+        _format="%Y-%m-%d %H:%M:%S",
+    )
+    data["Fecha-I"] = data["Fecha-I"].apply(string_to_date)
+    data.sort_values(by="Fecha-I", inplace=True)
+    dates_list: tp.List[timedelta] = data["Fecha-I"].tolist()
+    concurrency_values = []
+    starting_index = 0
+    for i in tqdm.tqdm(range(len(dates_list))):
+        concurrent_flights = 0
+        for j in range(starting_index, len(dates_list)):
+            time_delta = abs(dates_list[i] - dates_list[j])
+            if time_delta.total_seconds() <= time_window * 3600:
+                concurrent_flights += 1
+            else:
+                if i < j:
+                    concurrency_values.append(concurrent_flights)
+                    break
+                else:
+                    starting_index = j
+            if j == len(dates_list) - 1:
+                concurrency_values.append(concurrent_flights)
+    data["Conc-Flights"] = concurrency_values
+    return data
