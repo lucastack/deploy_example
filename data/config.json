@@ -1,0 +1,7 @@
+{
+  "features": {
+    "categorical": ["Day-I", "Month-I", "Ori-I", "Des-I", "Emp-I", "TIPOVUELO", "day_phase", "is_high_season"],
+    "numerical": ["Day-Number-I", "Conc-Flights"]
+  },
+  "target": "is_delayed"
+}
