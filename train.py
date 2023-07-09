@@ -55,7 +55,12 @@ def main(n_trials: int = 100):
         data_config = json.load(file)
 
     data = load_data(data_path=data_csv_path)
-    X, y = build_features_and_label(data, data_config)
+    X, y, encoder = build_features_and_label(data, data_config)
+
+    joblib.dump(
+        encoder,
+        os.path.join("models", "encoder.joblib"),
+    )
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.30, random_state=42
@@ -114,4 +119,4 @@ def main(n_trials: int = 100):
 
 
 if __name__ == "__main__":
-    main(10)
+    main(30)
