@@ -1,5 +1,8 @@
+import typing as tp
+
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.utils import resample
 
 from .utils import (
@@ -28,7 +31,7 @@ def load_data(data_path: str, threshold: int = 15) -> pd.DataFrame:
 
 def build_features_and_label(
     data: pd.DataFrame, data_config: dict[str, str]
-) -> pd.DataFrame:
+) -> tp.Tuple[pd.DataFrame, pd.Series, OneHotEncoder]:
     features_dict = data_config["features"]
     numerical_feats = features_dict["numerical"]
     categorical_feats = features_dict["categorical"]
@@ -44,9 +47,16 @@ def build_features_and_label(
 
     data = pd.concat([data_majority_downsampled, data_class_1])
     target = data[label]
+    data = data[numerical_feats + categorical_feats]
 
-    categorical_data_encoded = pd.concat(
-        [pd.get_dummies(data[feat], prefix=feat) for feat in categorical_feats], axis=1
+    encoder = OneHotEncoder(sparse=False, handle_unknown="ignore")
+
+    categorical_data_encoded = encoder.fit_transform(data[categorical_feats])
+
+    categorical_data_encoded = pd.DataFrame(
+        categorical_data_encoded,
+        columns=encoder.get_feature_names_out(categorical_feats),
+        index=data.index,
     )
     data = pd.concat([data[numerical_feats], categorical_data_encoded], axis=1)
-    return data, target
+    return data, target, encoder
