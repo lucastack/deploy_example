@@ -1,5 +1,20 @@
+import json
+
+import joblib
+import pandas as pd
 import uvicorn
-from fastapi import FastAPI
+import xgboost as xgb
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+from src.inference import InferenceSession
+
+model: xgb.XGBClassifier = joblib.load("models/xgboost_training.joblib")
+encoder = joblib.load("models/encoder.joblib")
+with open("data/config.json", "r") as file:
+    data_config = json.load(file)
+
+session = InferenceSession(model=model, encoder=encoder, data_config=data_config)
 
 app = FastAPI()
 
@@ -9,9 +24,26 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/hello/{name}")
-def say_hello(name: str):
-    return {"Hello": name}
+class Input(BaseModel):
+    Fecha_I: str
+    Ori_I: str
+    Des_I: str
+    Emp_I: str
+    TIPOVUELO: str
+
+
+@app.post("/predict")
+async def predict(data_in: Input):
+    try:
+        data = pd.DataFrame(
+            [data_in.model_dump().values()],
+            columns=["Fecha-I", "Ori-I", "Des-I", "Emp-I", "TIPOVUELO"],
+        )
+        prediction = session.predict(data)
+        return {"prediction": prediction.tolist()}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":
