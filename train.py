@@ -110,7 +110,7 @@ def main(n_trials: int = 100):
 
     y_pred = best_model.predict(X_test)
     test_score = f1_score(y_true=y_test, y_pred=y_pred)
-    print(f"F1 score in test set by best model found: {test_score:.2f}")
+    print(f"F1 score in test set by best model found: {test_score:.4f}")
 
 
 if __name__ == "__main__":
