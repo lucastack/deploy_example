@@ -1,11 +1,6 @@
 import pandas as pd
 
-from ..data.utils import (
-    aggregate_concurrent_flights_number,
-    get_day_data,
-    get_day_phase,
-    is_high_season,
-)
+from ..data.utils import get_day_data, get_day_phase, is_high_season
 
 
 class InferenceSession:
@@ -24,7 +19,6 @@ class InferenceSession:
         data["Month-I"] = days_month
         data["Day-I"] = days_name
         data["Day-Number-I"] = days_number
-        data = aggregate_concurrent_flights_number(data)
         del data["Fecha-I"]
         categorical_data_encoded = self.encoder.transform(data[categorical_feats])
         categorical_data_encoded = pd.DataFrame(
