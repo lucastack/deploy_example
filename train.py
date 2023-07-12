@@ -20,6 +20,34 @@ def objective(
     y_val: pd.DataFrame,
     experiment_name: str,
 ):
+    """
+    The objective function for the Optuna hyperparameter optimization process.
+    This function takes an Optuna trial object, training and validation data,
+    and an experiment name as input. It then defines a parameter space, trains
+    an XGBoost classifier, predicts on the validation set and calculates the
+    F1 score. If the F1 score is better than all previous trials, the model is
+    saved. The F1 score is returned as the result of this function/trial.
+
+    Parameters
+    ----------
+    trial : optuna.Trial
+        A trial is a process of evaluating an objective function.
+    X_train : pd.DataFrame
+        Training data features.
+    y_train : pd.Series
+        Training data labels.
+    X_val : pd.DataFrame
+        Validation data features.
+    y_val : pd.DataFrame
+        Validation data labels.
+    experiment_name : str
+        The name of the experiment.
+
+    Returns
+    -------
+    float
+        The F1 score for the given set of hyperparameters and data.
+    """
 
     parameters = {
         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.1),
@@ -47,6 +75,30 @@ def objective(
 
 
 def main(n_trials: int = 100):
+    """
+    Main function to run the model training process. This function loads
+    and pre-processes the data, splits it into training, validation and
+    testing sets, then optimizes `objective` function with the provided
+    data, and finally evaluates the performance of the best model.
+
+    Parameters
+    ----------
+    n_trials : int, optional
+        Number of trials for the optimization process, by default 100
+
+    Outputs
+    -------
+    None.
+
+    The function prints the following:
+        - Number of finished trials,
+        - Best trial's value and parameters,
+        - F1 score of the best model on the test set.
+
+    Note:
+        After training it will load the best model on validation set.
+
+    """
     data_folder = "data"
     data_csv_path = os.path.join(data_folder, "dataset_SCL.csv")
     data_config_path = os.path.join(data_folder, "config.json")

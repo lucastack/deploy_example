@@ -15,6 +15,26 @@ from .utils import (
 
 
 def load_data(data_path: str, threshold: int = 15) -> pd.DataFrame:
+    """
+    Loads the dataset from a CSV file, compute derived features and add them as
+    new columns. These features are computed based on functions `flight_delay_minutes`,
+    `is_high_season`, `get_day_phase`, and `get_day_data`. It also applies a threshold
+    on the delay_minutes to create a binary classification label (is_delayed).
+    Finally, it aggregates the number of concurrent flights.
+
+    Parameters
+    ----------
+    data_path : str
+        The path to the CSV file that contains the dataset.
+    threshold : int, optional
+        The threshold (in minutes) for flight delay which determines if a flight is
+        considered delayed (1) or not (0), by default 15.
+
+    Returns
+    -------
+    pd.DataFrame
+        The loaded data as a DataFrame with new features and labels.
+    """
     data = pd.read_csv(data_path)
     data["delay_minutes"] = data.apply(flight_delay_minutes, axis=1)
     data["is_delayed"] = np.where(data["delay_minutes"] > threshold, 1, 0)
@@ -32,12 +52,33 @@ def load_data(data_path: str, threshold: int = 15) -> pd.DataFrame:
 def build_features_and_label(
     data: pd.DataFrame, data_config: dict[str, str]
 ) -> tp.Tuple[pd.DataFrame, pd.Series, OneHotEncoder]:
+    """
+    Builds features and target from given data based on the provided configuration.
+    Numerical features are selected as is, categorical features are one-hot encoded.
+    The data is also balanced by downsampling the majority class in the target labels.
+    The modified data, target labels, and the fitted OneHotEncoder are returned.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The original data as a DataFrame.
+    data_config : dict[str, str]
+        A configuration dictionary containing:
+            - "features": A dictionary with "numerical" and "categorical" keys which map
+              to lists of respective feature names.
+            - "target": The name of the target (label) column.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.Series, OneHotEncoder]
+        A tuple containing the processed data as a DataFrame, target labels as a Series,
+        and the fitted OneHotEncoder.
+    """
     features_dict = data_config["features"]
     numerical_feats = features_dict["numerical"]
     categorical_feats = features_dict["categorical"]
     label = data_config["target"]
 
-    # let's downsample class 0
     data_class_0 = data[data[label] == 0]
     data_class_1 = data[data[label] == 1]
 
