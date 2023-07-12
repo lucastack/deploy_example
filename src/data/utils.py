@@ -7,6 +7,22 @@ import tqdm
 
 
 def is_high_season(date):
+    """
+    Determine if a given date falls within a high season period. Four high
+    season ranges are defined: 15-Dec to 31-Dec, 1-Jan to 3-Mar, 15-Jul to
+    31-Jul, and 11-Sep to 30-Sep. The function expects dates in the format
+    "YYYY-MM-DD HH:MM:SS".
+
+    Parameters
+    ----------
+    date : str
+        The date string in the format "YYYY-MM-DD HH:MM:SS".
+
+    Returns
+    -------
+    int
+        Returns 1 if the date is in a high season range, otherwise returns 0.
+    """
     year_date = int(date.split("-")[0])
     date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
     range1_min = datetime.strptime("15-Dec", "%d-%b").replace(year=year_date)
@@ -30,6 +46,22 @@ def is_high_season(date):
 
 
 def flight_delay_minutes(flight_data):
+    """
+    Compute the delay in minutes for a flight based on its scheduled
+    ("Fecha-I") and actual ("Fecha-O") departure times. The departure
+    times are expected to be in the format "YYYY-MM-DD HH:MM:SS".
+
+    Parameters
+    ----------
+    flight_data : pd.Series
+        A series containing the flight data, specifically the "Fecha-I"
+        and "Fecha-O" keys.
+
+    Returns
+    -------
+    float
+        The delay in minutes between the scheduled and actual departure times.
+    """
     fecha_o = datetime.strptime(flight_data["Fecha-O"], "%Y-%m-%d %H:%M:%S")
     fecha_i = datetime.strptime(flight_data["Fecha-I"], "%Y-%m-%d %H:%M:%S")
     dif_min = ((fecha_o - fecha_i).total_seconds()) / 60
@@ -37,6 +69,26 @@ def flight_delay_minutes(flight_data):
 
 
 def get_day_phase(date):
+    """
+    Determine the phase of the day (morning, evening, or night) for a given time.
+    The time is part of the input date string which is expected to be in the
+    format "YYYY-MM-DD HH:MM:SS".
+    The phases are defined as follows:
+        - morning: 05:00 to 11:59
+        - evening: 12:00 to 18:59
+        - night: 19:00 to 04:59 (next day)
+
+    Parameters
+    ----------
+    date : str
+        The date string in the format "YYYY-MM-DD HH:MM:SS".
+
+    Returns
+    -------
+    str
+        The phase of the day ("morning", "evening", or "night").
+    """
+
     date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S").time()
     morning_min = datetime.strptime("05:00", "%H:%M").time()
     morning_max = datetime.strptime("11:59", "%H:%M").time()
@@ -58,6 +110,22 @@ def get_day_phase(date):
 
 
 def get_day_data(date) -> tp.Tuple[str, str, int]:
+    """
+    Extract the day of the week, the month, and the day of the month from
+    a given date string.
+    The date is expected to be in the format "YYYY-MM-DD HH:MM:SS".
+
+    Parameters
+    ----------
+    date : str
+        The date string in the format "YYYY-MM-DD HH:MM:SS".
+
+    Returns
+    -------
+    Tuple[str, str, int]
+        A tuple containing the day of the week as a string, the month
+        as a string, and the day of the month as an integer.
+    """
     date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
     day_name = date.strftime("%A")
     month = str(date.month)
@@ -68,6 +136,29 @@ def get_day_data(date) -> tp.Tuple[str, str, int]:
 def aggregate_concurrent_flights_number(
     data: pd.DataFrame, time_window: int = 1
 ) -> pd.DataFrame:
+    """
+    Aggregate the number of flights that occur within a given time window
+    for each flight in the data. The function first sorts the data by the
+    "Fecha-I" column, which contains the scheduled departure time of the
+    flight. It then iterates over the sorted data to calculate the number
+    of concurrent flights.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The DataFrame containing flight data. Expected to have a "Fecha-I"
+        column with dates in the format "YYYY-MM-DD HH:MM:SS".
+    time_window : int, optional
+        The time window in hours for which to count concurrent flights.
+        Default is 1 hour.
+
+    Returns
+    -------
+    pd.DataFrame
+        The input DataFrame with an added "Conc-Flights" column, which
+        represents the number of concurrent flights for each flight in
+        the input data.
+    """
     string_to_date = partial(
         lambda string, _format: datetime.strptime(string, _format),
         _format="%Y-%m-%d %H:%M:%S",
