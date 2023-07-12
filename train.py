@@ -20,6 +20,34 @@ def objective(
     y_val: pd.DataFrame,
     experiment_name: str,
 ):
+    """
+    The objective function for the Optuna hyperparameter optimization process.
+    This function takes an Optuna trial object, training and validation data,
+    and an experiment name as input. It then defines a parameter space, trains
+    an XGBoost classifier, predicts on the validation set and calculates the
+    F1 score. If the F1 score is better than all previous trials, the model is
+    saved. The F1 score is returned as the result of this function/trial.
+
+    Parameters
+    ----------
+    trial : optuna.Trial
+        A trial is a process of evaluating an objective function.
+    X_train : pd.DataFrame
+        Training data features.
+    y_train : pd.Series
+        Training data labels.
+    X_val : pd.DataFrame
+        Validation data features.
+    y_val : pd.DataFrame
+        Validation data labels.
+    experiment_name : str
+        The name of the experiment.
+
+    Returns
+    -------
+    float
+        The F1 score for the given set of hyperparameters and data.
+    """
 
     parameters = {
         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.1),
