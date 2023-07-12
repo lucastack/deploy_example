@@ -47,6 +47,30 @@ def objective(
 
 
 def main(n_trials: int = 100):
+    """
+    Main function to run the model training process. This function loads
+    and pre-processes the data, splits it into training, validation and
+    testing sets, then optimizes `objective` function with the provided
+    data, and finally evaluates the performance of the best model.
+
+    Parameters
+    ----------
+    n_trials : int, optional
+        Number of trials for the optimization process, by default 100
+
+    Outputs
+    -------
+    None.
+
+    The function prints the following:
+        - Number of finished trials,
+        - Best trial's value and parameters,
+        - F1 score of the best model on the test set.
+
+    Note:
+        After training it will load the best model on validation set.
+
+    """
     data_folder = "data"
     data_csv_path = os.path.join(data_folder, "dataset_SCL.csv")
     data_config_path = os.path.join(data_folder, "config.json")
