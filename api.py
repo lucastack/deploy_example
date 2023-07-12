@@ -33,15 +33,19 @@ class Input(BaseModel):
     Conc_Flights: int
 
 
-@app.post("/predict")
-async def predict(data_in: Input):
+class Output(BaseModel):
+    prediction: int
+
+
+@app.post("/predict", response_model=Output)
+async def predict(data_in: Input) -> Output:
     try:
         data = pd.DataFrame(
             [data_in.model_dump().values()],
             columns=["Fecha-I", "Ori-I", "Des-I", "Emp-I", "TIPOVUELO", "Conc-Flights"],
         )
         prediction = session.predict(data)
-        return {"prediction": prediction.tolist()}
+        return {"prediction": prediction.tolist()[0]}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
