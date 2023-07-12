@@ -30,6 +30,7 @@ class Input(BaseModel):
     Des_I: str
     Emp_I: str
     TIPOVUELO: str
+    Conc_Flights: int
 
 
 @app.post("/predict")
@@ -37,7 +38,7 @@ async def predict(data_in: Input):
     try:
         data = pd.DataFrame(
             [data_in.model_dump().values()],
-            columns=["Fecha-I", "Ori-I", "Des-I", "Emp-I", "TIPOVUELO"],
+            columns=["Fecha-I", "Ori-I", "Des-I", "Emp-I", "TIPOVUELO", "Conc-Flights"],
         )
         prediction = session.predict(data)
         return {"prediction": prediction.tolist()}
